@@ -1,0 +1,115 @@
+<task-notification>
+<task-id>a590bee1f6dcd230f</task-id>
+<tool-use-id>toolu_018pHnenE38ZVsfLPUeTUbsE</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-yongjun-kim/210b836c-3c7d-4f90-b852-2c66827bbbce/tasks/a590bee1f6dcd230f.output</output-file>
+<status>completed</status>
+<summary>Agent "Transit routing literature web search" completed</summary>
+<result>I now have solid material across all five topics. Let me compile the full curated reference list.
+
+Here is the curated reference list across all five topics. Only published journal or conference papers are included — blog posts, wikis, and tools are excluded.
+
+---
+
+**[Topic 1] Korean Public Transit Network / Graph Dataset**
+
+- **Exploring the Topological Characteristics of Complex Public Transportation Networks: Focus on Variations in Both Single and Integrated Systems in the Seoul Metropolitan Area** (2019, Sustainability / MDPI) — Kim &amp; Jung — Analyzes the integrated subway+bus network of Seoul as a graph, comparing unimodal vs. multimodal topology metrics, directly relevant as a precedent for Korean multimodal graph construction.
+
+- **Statistical Analysis of the Metropolitan Seoul Subway System: Network Structure and Passenger Flows** (2008, Physica A: Statistical Mechanics and Its Applications) — Lee et al. — Examines the topological properties and power-law passenger flow distributions of Seoul Metro, providing a foundational graph-theoretic baseline for Korean subway datasets.
+
+- **Intercity Express Bus Flow in Korea and Its Network Analysis** (2012, Physica A) — Lee &amp; Jung — Constructs and analyzes the intercity express bus network of Korea as a complex graph, directly relevant to the intercity bus component of your nationwide multimodal graph.
+
+- **Does Intercity Transportation Accessibility Matter? Its Effects on Regional Network Centrality in South Korea** (2025, Land / MDPI) — Studies KTX + intercity road network centrality across Korean regions, relevant to the KTX layer of your graph.
+
+- **Network Analysis of World Subway Systems Using Updated Graph Theory** (2009, Transportation Research Record) — Derrible &amp; Kennedy — Analyzes 19 subway systems worldwide (including Seoul) using graph theory, a widely cited methodological reference for transit graph construction and comparison.
+
+---
+
+**[Topic 2] Multimodal Transit Routing Algorithms**
+
+- **ULTRA: Unlimited Transfers for Efficient Multimodal Journey Planning** (2023, Transportation Science) — Baum et al. — Proposes ULTRA, which combines a public transit network with a secondary-mode transfer graph to compute Pareto-optimal journeys, directly applicable to subway+bus+KTX multimodal routing.
+
+- **Transfer Graph Approach for Multimodal Transport Problems** (2008, Springer LNCS / OASIcs) — Müller-Hannemann et al. — Introduces the transfer graph abstraction where multimodal network components are connected via transfer nodes, a foundational model for the graph architecture described in your paper.
+
+- **A Multimodal Transport Network Model and Efficient Algorithms for Building Advanced Traveler Information Systems** (2017, Transportation Research Procedia) — Pyrga et al. — Proposes a multicriteria routing formulation for public transit network itinerary planning, relevant to time-dependent multimodal route search.
+
+- **Routing in Multimodal Transportation Networks with Non-Scheduled Lines** (2022, SEA / LIPIcs) — Potthoff &amp; Witt — Extends Trip-Based routing to non-scheduled modes (e.g., bike-sharing, BRT), relevant to integrating BRT into a time-dependent multimodal graph.
+
+- **An AI-Enhanced Transfer Graph Framework for Time-Dependent Intermodal Transport Optimization** (2025, AI / MDPI) — Integrates ML into transfer-graph models for time-dependent intermodal routing, relevant for future extension of your routing framework.
+
+---
+
+**[Topic 3] Meeting Point / Symmetric Meeting Problem in Transport Networks**
+
+- **Optimal Meeting Points for Public Transit Users** (2018, IEEE ICDE) — Addresses the k-OMPPT problem where a group of users traveling by subway/bus routes find meeting points minimizing aggregate detour distance, the closest direct precedent to your midpoint-finder application in a transit context.
+
+- **Efficient Algorithms for Finding Optimal Meeting Point on Road Networks** (2011, PVLDB / VLDB) — Yan et al. — Proposes efficient algorithms for the optimal meeting-point query where aggregate travel cost from multiple users is minimized on a road network graph, foundational algorithmic reference.
+
+- **Advanced Algorithms for Optimal Meeting Points in Road Networks** (2023, IET Intelligent Transport Systems) — Liu et al. — Proposes randomized adaptive and random-direction heuristics for finding optimal meeting points in large-scale geographic networks, relevant as a scalability comparison.
+
+- **Querying Optimal Routes for Group Meetup** (2021, Data Science and Engineering / Springer) — Formulates the OSR-G problem of finding a meeting POI minimizing maximum users' detour travel distance, relevant to fairness-based midpoint criteria in your application.
+
+- **Calculating Meeting Points for Multi-User Pedestrian Navigation Systems** (2011, Springer LNCS / GIScience) — Discusses Steiner-tree and Euclidean approaches for multi-user meeting-point calculation on street networks, relevant to the geometric vs. network-distance trade-off in midpoint finding.
+
+---
+
+**[Topic 4] Time-Dependent Shortest Path in Transit**
+
+- **Round-Based Public Transit Routing (RAPTOR)** (2015, Transportation Science) — Delling, Pajor &amp; Werneck — Introduces RAPTOR, a non-Dijkstra round-based algorithm optimizing arrival time and transfers in dynamic transit networks, the dominant benchmark algorithm for time-dependent transit routing.
+
+- **Trip-Based Public Transit Routing** (2015, ESA / Springer LNCS) — Witt — Proposes a trip-centric Pareto-optimal routing algorithm with 70 ms 24-hour profile queries on London's network after preprocessing, highly relevant as an efficient time-dependent routing baseline.
+
+- **An Efficient GTFS-Enabled Algorithm for Dynamic Transit Accessibility Analysis** (2017, PLOS ONE) — Proposes a GTFS-based shortest-path algorithm for time-dependent transit travel times, directly relevant for building routing on GTFS schedule data as your paper does.
+
+- **Time-Dependent Shortest-Path Algorithm for Scheduled Service Networks** (1993, Transportation Research Record) — An early foundational reference for time-dependent shortest paths that model transit departure schedules as edge-weight functions of time.
+
+- **Finding the K Shortest Paths in a Schedule-Based Transit Network** (ResearchGate / Transportation Research Part B) — Extends shortest-path methods to schedule-based (time-dependent) transit networks, relevant to the algorithmic layer of your routing system.
+
+---
+
+**[Topic 5] Open Transit Graph Datasets / GTFS**
+
+- **A Collection of Public Transport Network Data Sets for 25 Cities** (2018, Scientific Data / Nature) — Kujala, Weckström, Darst, Mladenović &amp; Saramäki — Publishes curated GTFS-derived graph datasets for 25 cities in multiple network formats, the closest methodological precedent for releasing a standardized transit graph dataset (as your paper does for Korea).
+
+- **Innovative GTFS Data Application for Transit Network Analysis Using a Graph-Oriented Method** (2016, ResearchGate / conference) — Applies graph-oriented methods to GTFS feeds for network analysis, relevant to justifying the GTFS-to-graph pipeline in your paper.
+
+- **Visualizing Public Transit System Operation with GTFS Data: A Case Study of Calgary, Canada** (2020, Heliyon / PMC) — Demonstrates a full workflow of GTFS ingestion, temporal graph construction, and visualization, useful as a methodological comparison for your dataset paper.
+
+- **Route Planning in Transportation Networks** (2016, ACM Computing Surveys) — Bast et al. — Comprehensive survey of routing algorithms on road and transit networks including GTFS-based methods, the standard reference survey for this entire field.
+
+---
+
+**Key citation handles for your paper:**
+
+| Topic | Must-cite paper |
+|-------|----------------|
+| Korean network graph | Derrible &amp; Kennedy 2009 (TRR); Lee &amp; Jung 2012 (Physica A intercity bus) |
+| Multimodal routing | ULTRA (Transportation Science 2023); Transfer Graph (Springer 2008) |
+| Meeting point | Yan et al. VLDB 2011; IEEE ICDE 2018 transit meeting point |
+| Time-dependent routing | RAPTOR (Transportation Science 2015); Witt Trip-Based 2015 |
+| Open dataset | Kujala et al. Scientific Data 2018 |
+
+Sources:
+- [Exploring Topological Characteristics of Seoul Metropolitan Transit Networks (MDPI 2019)](https://www.mdpi.com/2071-1050/11/19/5404)
+- [Statistical Analysis of Metropolitan Seoul Subway System (ScienceDirect)](https://www.sciencedirect.com/science/article/abs/pii/S0378437108006006)
+- [Intercity Express Bus Flow in Korea and Its Network Analysis (ScienceDirect)](https://www.sciencedirect.com/science/article/abs/pii/S037843711200283X)
+- [Does Intercity Transportation Accessibility Matter? South Korea (MDPI 2025)](https://www.mdpi.com/2073-445X/14/4/873)
+- [Network Analysis of World Subway Systems Using Updated Graph Theory (SAGE/TRR)](https://journals.sagepub.com/doi/10.3141/2112-03)
+- [ULTRA: Unlimited Transfers for Efficient Multimodal Journey Planning (Transportation Science)](https://pubsonline.informs.org/doi/10.1287/trsc.2022.0198)
+- [Transfer Graph Approach for Multimodal Transport Problems (Springer)](https://link.springer.com/chapter/10.1007/978-3-540-87477-5_57)
+- [A Multimodal Transport Network Model (ScienceDirect)](https://www.sciencedirect.com/science/article/pii/S2352146517301552)
+- [Routing in Multimodal Networks with Non-Scheduled Lines (LIPIcs SEA 2022)](https://drops.dagstuhl.de/storage/00lipics/lipics-vol233-sea2022/LIPIcs.SEA.2022.6/LIPIcs.SEA.2022.6.pdf)
+- [AI-Enhanced Transfer Graph Framework (MDPI AI 2025)](https://www.mdpi.com/2571-5577/9/1/10)
+- [Optimal Meeting Points for Public Transit Users (IEEE ICDE 2018)](https://ieeexplore.ieee.org/document/8411257/)
+- [Efficient Algorithms for Finding Optimal Meeting Point on Road Networks (VLDB)](http://www.vldb.org/pvldb/vol4/p968-yan.pdf)
+- [Advanced Algorithms for Optimal Meeting Points in Road Networks (IET ITS 2023)](https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/itr2.12323)
+- [Querying Optimal Routes for Group Meetup (Springer DSE 2021)](https://link.springer.com/article/10.1007/s41019-021-00153-5)
+- [Calculating Meeting Points for Multi-User Pedestrian Navigation (Springer LNCS 2011)](https://link.springer.com/chapter/10.1007/978-3-642-24455-1_34)
+- [Round-Based Public Transit Routing / RAPTOR (Transportation Science 2015)](https://pubsonline.informs.org/doi/10.1287/trsc.2014.0534)
+- [Trip-Based Public Transit Routing (Springer ESA 2015)](https://link.springer.com/chapter/10.1007/978-3-662-48350-3_85)
+- [GTFS-Enabled Algorithm for Dynamic Transit Accessibility (PLOS ONE 2017)](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0185333)
+- [A Collection of Public Transport Network Data Sets for 25 Cities (Scientific Data 2018)](https://www.nature.com/articles/sdata201889)
+- [Innovative GTFS Data Application for Transit Network Analysis (ResearchGate)](https://www.researchgate.net/publication/310446593_Innovative_GTFS_Data_Application_for_Transit_Network_Analysis_Using_a_Graph-Oriented_Method)
+- [Visualizing Public Transit System Operation with GTFS Data (Heliyon 2020)](https://www.sciencedirect.com/science/article/pii/S2405844020305740)
+- [Route Planning in Transportation Networks (arXiv survey)](https://arxiv.org/pdf/1504.05140)</result>
+<usage><total_tokens>22997</total_tokens><tool_uses>14</tool_uses><duration_ms>103806</duration_ms></usage>
+</task-notification>

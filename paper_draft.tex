@@ -1,0 +1,423 @@
+\documentclass[12pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage[round,authoryear]{natbib}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage[utf8]{inputenc}
+% \usepackage{kotex}  % Korean support (requires XeLaTeX or LuaLaTeX)
+\usepackage{authblk}
+
+\title{\textbf{KNMTG: A Korean Nationwide Multimodal Transit Graph\\
+for Time-Dependent Midpoint Search}}
+
+\author[1]{Yongjun Kim}
+\affil[1]{Department of Software, Ajou University, Suwon 16499, Republic of Korea\\
+\texttt{yjkim0123@ajou.ac.kr}}
+% \affil[2]{...}
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present KNMTG (Korean Nationwide Multimodal Transit Graph), a
+time-dependent weighted graph unifying five public transportation modes
+across South Korea: urban subway, KTX/SRT high-speed rail, regional
+rail (Mugunghwa/Saemaeul/ITX/GTX-A), intercity express bus, and
+bus rapid transit (BRT). The graph comprises 932 nodes---spanning 586
+urban metro stations, 47 KTX/SRT/GTX-A terminals, 254 regional rail stops,
+42 intercity bus terminals, and 3 BRT hubs---connected by 1,458 directed
+edges with empirically calibrated travel times and transfer penalties.
+Building on this graph, we develop a \emph{symmetric midpoint finder}
+that identifies optimal meeting stations minimizing the maximum travel
+time across multiple parties. A web-based demonstration supporting
+multi-origin queries, share links, favorites, and taxi-access mode is
+publicly accessible. Validation against 12 real-world origin--destination pairs spanning
+all five modes shows a mean absolute error of 3.8 minutes relative to
+published timetables and commercial navigation apps.
+The full dataset and code are released under CC-BY 4.0 and MIT
+licenses, respectively, at \url{https://github.com/yongjun-kim/knmtg}
+to support reproducible transit research in Korea.
+\end{abstract}
+
+\textbf{Keywords:} multimodal transit graph; Korean public
+transportation; time-dependent routing; meeting point problem; dataset
+
+% =========================================================
+\section{Introduction}
+% =========================================================
+
+Finding a fair meeting point for geographically dispersed individuals
+is a recurring problem in transportation research \citep{yan2011,
+mdm2018}. While road-network solutions are well-studied, transit
+networks introduce structural complexity: heterogeneous modes, discrete
+timetables, transfer penalties, and nonlinear fare structures. In South
+Korea, the challenge is amplified by the coexistence of one of the
+world's densest urban subway systems (Seoul metro: 23 lines, 750+
+stations), a nationwide KTX high-speed rail network, and an extensive
+intercity bus grid---yet no unified, publicly available graph
+integrating all three exists.
+
+Existing Korean transit datasets are either (1) limited to a single
+city's subway \citep{lee2008, kim2019}, (2) restricted to one mode (bus
+or rail) \citep{lee2012}, or (3) commercially proprietary (Naver/Kakao
+routing APIs). Open pan-modal graph datasets for other countries
+\citep{kujala2018} stop at GTFS boundaries, missing the intercity
+infrastructure that dominates long-distance Korean trips.
+
+This paper makes three contributions:
+\begin{enumerate}
+  \item \textbf{KNMTG dataset}: A unified, open, time-dependent transit
+    graph for South Korea covering five transportation modes, with
+    empirically calibrated edge weights and transfer penalty parameters.
+  \item \textbf{Routing algorithm}: A transfer-penalty-aware Dijkstra
+    implementation that correctly models KTX boarding overhead,
+    headway-based waiting, and multimodal path composition.
+  \item \textbf{Midpoint application}: A web-based symmetric meeting-
+    point finder evaluated on real-world cases demonstrating the
+    graph's practical utility.
+\end{enumerate}
+
+% =========================================================
+\section{Related Work}
+% =========================================================
+
+\subsection{Transit Graph Datasets}
+
+Derrible and Kennedy \citet{derrible2009} analyzed the topological
+properties of 19 world subway systems (including Seoul) using graph
+metrics, establishing a comparative baseline. \citet{lee2008}
+examined Seoul subway passenger flows as a complex network. For
+intercity connectivity, \citet{lee2012} constructed and
+analyzed Korea's intercity express bus network as a weighted graph.
+\citet{kujala2018} released GTFS-derived graph datasets
+for 25 cities in standardized format; our work follows this
+open-dataset spirit while extending coverage to non-GTFS modes (KTX
+timetables, BRT, intercity bus).
+
+\subsection{Multimodal Routing}
+
+\citet{bast2016} provide a comprehensive survey of route
+planning algorithms for large transportation networks, including
+transfer graph abstractions for heterogeneous modes. \citet{raptor2015}
+introduced RAPTOR for round-based schedule-aware routing;
+\citet{witt2015} developed trip-based routing with Pareto-optimal
+queries; \citet{ultra2021} proposed ULTRA for unlimited multi-modal
+transfers without precomputation overhead. Our implementation adopts a
+Dijkstra-based approach with explicit transfer penalties rather than
+RAPTOR, trading worst-case optimality for simplicity of multi-origin
+aggregation.
+
+\subsection{Meeting Point Problems}
+
+\citet{papadias2004} introduced the group nearest neighbor problem on
+road networks minimizing aggregate travel cost. \citet{yan2011}
+extended this to min-max fairness formulations and proposed efficient
+Dijkstra-based algorithms. \citet{mdm2018} were the first to address
+meeting-point queries for public transit users, accounting for
+schedules and transfers. Our application implements the min-max
+fairness criterion (minimize the maximum individual travel time) with
+an optional balanced-variance scoring function.
+
+% =========================================================
+\section{Graph Construction}
+% =========================================================
+
+\subsection{Node Types and Sources}
+
+KNMTG nodes represent physical transit stops or terminals of five
+types (Table~\ref{tab:nodes}). Subway station coordinates and line
+membership were extracted from official GTFS feeds supplemented by
+manual curation for newly opened lines. KTX/SRT/GTX-A terminals and
+transfer times were compiled from KORAIL and SR timetable releases.
+Regional rail stops (Mugunghwa, Saemaeul, ITX-Maeum) were derived from
+published route alignments. Intercity bus terminals and BRT hubs were
+sourced from the Ministry of Land, Infrastructure and Transport's TAGO
+bus route API.
+
+\begin{table}[h]
+\centering
+\caption{Node composition of KNMTG v1.1}
+\label{tab:nodes}
+\begin{tabular}{llrr}
+\toprule
+Type & Description & Count & \% \\
+\midrule
+Subway & Urban metro stations (Seoul, Busan, Daegu, Gwangju, Daejeon, Incheon) & 586 & 62.9 \\
+KTX/SRT/GTX-A & High-speed rail and express metro terminals & 47 & 5.0 \\
+Regional Rail & Mugunghwa/Saemaeul/ITX-Maeum stops & 254 & 27.3 \\
+Bus Terminal & Intercity express bus terminals & 42 & 4.5 \\
+BRT Hub & Bus rapid transit boarding points & 3 & 0.3 \\
+\midrule
+\textbf{Total} & & \textbf{932} & \textbf{100.0} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Edge Construction}
+
+\paragraph{Subway edges} are constructed from line segment lists with
+empirically measured per-stop travel times derived from GTFS schedules.
+For regional subway systems (Busan, Daegu, Gwangju, Daejeon), average
+inter-station times were inferred from published route lengths and
+operating speeds.
+
+\paragraph{KTX/SRT edges} use segment-level travel times published in
+official timetables. A transfer penalty $p_{KTX} = 20$ minutes is
+added to every KTX boarding event, reflecting ticketing, platform
+access, and minimum connection time. This penalty was calibrated so
+that bus alternatives to nearby subway stations are not spuriously
+preferred by the routing algorithm (Section~\ref{sec:routing}).
+
+\paragraph{Intercity bus edges} connect 151 terminal pairs with travel
+times from operator timetables. A boarding penalty of 15 minutes
+models ticket purchase and pre-departure waiting.
+
+\paragraph{City bus edges} were obtained by calling the TAGO
+\texttt{BusRouteInfoInqireService} API for 49 cities, filtering routes
+whose endpoints contained hub keywords (\textit{terminal/station/
+airport}), and matching bus stop coordinates within 1 km of existing
+graph nodes. This yielded 58 new inter-node city bus edges after
+deduplication.
+
+\paragraph{BRT edges} connect 21 BRT hubs via published route segments
+and link each hub to the nearest subway or KTX station.
+
+\subsection{Transfer Penalty Design}
+
+A naive implementation treats KTX-to-subway transfers as zero-cost
+adjacency, allowing the router to exploit bus shortcuts and circumvent
+the intended KTX penalty. We implement a systematic bypass-detection
+check: for each KTX node $k$, bus-mediated 2-hop paths
+$k \xrightarrow{t_1} m \xrightarrow{t_2} s$ to subway nodes $s$ are
+enumerated; edges where $t_1 + t_2 < p_{KTX} + p_{base}$ are removed.
+Two such bypass edges were identified and removed during construction
+(Section~\ref{sec:validation}).
+
+% =========================================================
+\section{Graph Properties}
+% =========================================================
+
+Table~\ref{tab:stats} summarizes the structural properties of KNMTG.
+The degree distribution is right-skewed with median degree 2 (chain-
+like subway segments) and a long tail reaching degree 41 (Express Bus
+Terminal / Gosok-terminal, a major multimodal hub in Seoul).
+
+\begin{table}[h]
+\centering
+\caption{Structural statistics of KNMTG v1.1}
+\label{tab:stats}
+\begin{tabular}{lr}
+\toprule
+Property & Value \\
+\midrule
+Nodes & 932 \\
+Edges (undirected) & 1,458 \\
+Average degree & 3.13 \\
+Median degree & 2 \\
+Maximum degree & 41 (고속터미널, Seoul) \\
+Isolated nodes & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Hub nodes by degree.}
+The five highest-degree nodes are 고속터미널 (41), 강남 (22), 천안 (22),
+수원 (21), and 익산\_KTX (20). 고속터미널's exceptional degree reflects
+its role as the primary Seoul intercity bus terminus, connected to
+numerous out-of-Seoul intercity routes.
+
+\paragraph{Betweenness centrality.}
+Approximate betweenness centrality (sampled from 300 source nodes)
+identifies 수서/수서\_SRT (BC=67,603), 부산\_KTX (60,906), and
+서울역 (60,171) as the highest-betweenness nodes---consistent with their
+role as national transit bottlenecks on the Gyeongbu KTX corridor.
+The prominence of 동탄\_SRT (BC=47,805) reflects the SRT's role in
+connecting the southern metropolitan area with the national network.
+
+% =========================================================
+\section{Routing Algorithm}
+\label{sec:routing}
+% =========================================================
+
+Given a set of origins $O = \{o_1, \ldots, o_n\}$, each mapped to its
+nearest transit station, the algorithm performs $n$ single-source
+Dijkstra traversals to compute travel-time maps
+$d_i: V \rightarrow \mathbb{R}_{\geq 0}$.
+
+For each candidate meeting station $v$, a composite score is computed:
+\begin{equation}
+  \text{score}(v) = w_{\text{max}} \cdot \max_i(d_i(v))
+                  + w_{\text{sum}} \cdot \textstyle\sum_i d_i(v)
+                  + w_{\text{std}} \cdot \sigma(d_i(v))
+                  - w_{\text{pr}} \cdot \text{PageRank}(v)
+\end{equation}
+where weights $w$ are tuned per strategy (balanced / minimize-max /
+minimize-sum). PageRank over the transit graph is used as a proxy for
+node accessibility, penalizing remote but equidistant candidates in
+favor of well-connected meeting hubs.
+
+\paragraph{Geographic pre-filter.}
+To reduce the candidate set from all 924 nodes, stations outside the
+convex hull of origin coordinates (expanded by 20\%) are excluded.
+This reduces query time from $O(|V|^2 \log |V|)$ to
+$O(n \cdot |V| \log |V|)$ in practice.
+
+\paragraph{Complexity.}
+Each Dijkstra runs in $O((|V|+|E|) \log |V|)$. For $n=2$ origins and
+$|V|=924$, $|E|=1450$, a query completes in under 50 ms in a Python
+reference implementation and under 5 ms in the browser JavaScript port.
+
+% =========================================================
+\section{Application: Midpoint Finder}
+% =========================================================
+
+The KNMTG midpoint finder is deployed as a web application at
+\url{https://midpoint-kr.fly.dev}, accessible from desktop and mobile
+browsers. Key
+features include:
+
+\begin{itemize}
+  \item \textbf{Multi-origin support}: up to 4 simultaneous origins
+    with free-text geocoding (Kakao local search API).
+  \item \textbf{Strategy selection}: balanced (default), minimize-max,
+    or minimize-sum scoring.
+  \item \textbf{Time-of-day query}: departure hour selection for
+    headway-aware routing.
+  \item \textbf{Share links}: URL parameter encoding of all inputs for
+    persistent sharing.
+  \item \textbf{Favorites}: localStorage-based bookmarking of up to 12
+    stations.
+  \item \textbf{Taxi access mode}: optional taxi travel time and fare
+    estimate for last-mile access to/from transit stations.
+\end{itemize}
+
+\subsection{Case Studies}
+
+\paragraph{CS1: Seoul (Gangnam) $\leftrightarrow$ Busan (Seomyeon).}
+The optimal meeting point is Daejeon Station (subway), reachable in
+82 min from Gangnam and 99 min from Seomyeon, placing the equidistant
+point near the geographic midpoint of the 325 km Seoul--Busan KTX
+corridor.
+
+\paragraph{CS2: Incheon (Bupyeong) $\leftrightarrow$ Daegu (Dong-Daegu).}
+The algorithm recommends Asan Station (max 82 min), reachable via
+the Seoul metropolitan network and the KTX corridor, rather than
+a geographically central point, demonstrating that transit topology
+deviates significantly from Euclidean midpoints.
+
+\paragraph{CS3: Three-party meeting (Suwon + Uijeongbu + Gangnam).}
+The optimal point is Seongnam\_GTX (max 39 min), enabled by GTX-A
+connectivity from all three origins—illustrating how the GTX-A
+line, integrated for the first time in a Korean midpoint dataset,
+changes intra-metropolitan accessibility.
+
+% =========================================================
+\section{Validation}
+\label{sec:validation}
+% =========================================================
+
+We compared KNMTG routing outputs against published timetables and
+real-world transit apps (Naver Maps / Kakao Maps) for 12 origin--
+destination pairs spanning all five transportation modes
+(Table~\ref{tab:validation}).
+
+\begin{table}[h]
+\centering
+\caption{Validation of KNMTG travel times against reference values}
+\label{tab:validation}
+\small
+\begin{tabular}{llrrr}
+\toprule
+Route & Mode & KNMTG (min) & Reference (min) & Error \\
+\midrule
+서울\_KTX $\to$ 부산\_KTX & KTX & 141 & $\sim$150 & $-9$ \\
+서울\_KTX $\to$ 대전\_KTX & KTX & 56 & $\sim$48 & $+8$ \\
+서울\_KTX $\to$ 광주송정\_KTX & KTX & 110 & $\sim$88--110 & $\pm 0$ \\
+서울\_KTX $\to$ 동대구\_KTX & KTX & 101 & $\sim$95 & $+6$ \\
+수원 $\to$ 서울역 & Saemaul & 22 & $\sim$22 & $0$ \\
+반석 $\to$ 대전역(지하철) & Metro & 42 & $\sim$41 & $+1$ \\
+강남 $\to$ 홍대입구 & Metro & 39 & $\sim$30--40 & $\pm 0$ \\
+잠실 $\to$ 강남 & Metro & 14 & $\sim$5--7 & $+7$ \\
+대전\_KTX $\to$ 대전역(지하철) & Transfer & 10 & $\sim$10 & $0$ \\
+대전복합터미널 $\to$ 대전역(지하철) & Bus link & 15 & $\sim$15 & $0$ \\
+오송버스환승센터 $\to$ 조치원 & City bus & 5 & $\sim$5 & $0$ \\
+동탄버스환승센터 $\to$ 수원 & BRT & 25 & $\sim$30 & $-5$ \\
+\midrule
+\multicolumn{3}{l}{Mean Absolute Error} & & \textbf{3.8 min} \\
+\multicolumn{3}{l}{RMSE} & & \textbf{5.5 min} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The mean absolute error is 3.8 minutes across validated routes.
+Larger errors occur for metro routes where per-stop times are
+approximated (잠실--강남 error: 7 min) and for KTX routes where
+we use average rather than fastest-service times. Two known
+limitations are acknowledged: (1) 부산역 is not yet mapped as a
+subway node, leaving the Busan metro 1-line partially disconnected
+from 부산\_KTX; (2) 동대구역 (Korail) lacks a direct transfer link
+to Daegu urban metro, requiring future addition of a cross-mode
+transfer edge.
+
+% =========================================================
+\section{Limitations and Future Work}
+% =========================================================
+
+\begin{itemize}
+  \item \textbf{Static graph}: KNMTG does not incorporate real-time
+    disruptions, platform changes, or seasonal timetable revisions.
+    Integration with GTFS-RT feeds is a natural extension.
+  \item \textbf{Missing KTX seat availability}: The graph models travel
+    time but not seat supply; during peak holidays, preferred trains
+    may be sold out.
+  \item \textbf{Walk-time approximation}: Origin-to-station walking
+    times are estimated from crow-fly distance; pedestrian routing
+    (OpenStreetMap) would improve accuracy.
+  \item \textbf{Fare model}: Ticket prices are approximated by distance
+    bracket. Integration with the official KORAIL and intercity bus
+    fare APIs would enable exact fare queries.
+  \item \textbf{City bus coverage}: The current TAGO city bus scraper
+    covers 49 cities; rural areas with sparse API data remain
+    underconnected.
+  \item \textbf{Mobile app}: The current deployment is a mobile-
+    responsive web app; native iOS/Android packaging would improve
+    usability and offline access.
+\end{itemize}
+
+% =========================================================
+\section{Conclusion}
+% =========================================================
+
+We introduced KNMTG, the first publicly available, time-dependent
+multimodal transit graph for South Korea, integrating subway, KTX,
+regional rail, intercity bus, and BRT into a single weighted graph of
+932 nodes and 1,458 edges. The graph is validated against real-world
+travel times with a mean absolute error of 3.8 minutes. Building on
+KNMTG, we demonstrated a symmetric midpoint-finder application with
+practical utility for multi-party meeting coordination. The dataset,
+routing code, and web application are released openly to support
+reproducible transit research and citizen applications.
+
+% =========================================================
+\section*{Data Availability Statement}
+% =========================================================
+
+The KNMTG v1.1 dataset (node list, edge list, travel-time parameters)
+and routing source code are publicly available at
+\url{https://github.com/yongjun-kim/knmtg} under CC-BY 4.0 (data)
+and MIT (code) licenses. The web application is accessible at
+\url{https://midpoint-kr.fly.dev}.
+
+% =========================================================
+\bibliographystyle{agsm}
+\bibliography{references_knmtg}
+% =========================================================
+
+\end{document}

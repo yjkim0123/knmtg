@@ -1,0 +1,57 @@
+{
+  "correct_routes": [
+    {
+      "route": "서울_KTX→부산_KTX",
+      "our": 141,
+      "actual": "~150",
+      "note": "정확 (-9분, 무정차 기준)"
+    },
+    {
+      "route": "서울_KTX→대전_KTX",
+      "our": 56,
+      "actual": "~48",
+      "note": "약간 과다 (+8분)"
+    },
+    {
+      "route": "수원→서울역",
+      "our": 22,
+      "actual_subway": "~55",
+      "actual_saemaeul": "~22",
+      "note": "새마을호 최단경로 정확"
+    },
+    {
+      "route": "반석→대전역(지하철)",
+      "our": 42,
+      "actual": "~41",
+      "note": "정확 (+1분)"
+    },
+    {
+      "route": "대전복합터미널→대전역(지하철)",
+      "our": 15,
+      "actual": "~15",
+      "note": "정확"
+    },
+    {
+      "route": "오송버스환승센터→조치원",
+      "our": 5,
+      "actual": "~5",
+      "note": "정확"
+    },
+    {
+      "route": "동탄버스환승센터→수원",
+      "our": 25,
+      "actual": "~30",
+      "note": "정확 (-5분)"
+    }
+  ],
+  "known_limitations": [
+    {
+      "issue": "대구 환승 경로",
+      "description": "동대구(Korail)↔대구 도시철도 직접 환승 링크 미구현"
+    },
+    {
+      "issue": "서울KTX→광주송정KTX 110분",
+      "description": "호남선 KTX 평균 소요시간 반영 (최고속 83분 vs 평균 100-110분)"
+    }
+  ]
+}
